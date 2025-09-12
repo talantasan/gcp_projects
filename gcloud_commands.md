@@ -20,5 +20,7 @@ gcloud config set proejct $PROJECT_ID
 ```
 gcloud compute instances list
  gcloud compute instances delete talant-vm-1 --zone us-east1-b
+
+ gcloud compute instance-templates list
 ```
 
