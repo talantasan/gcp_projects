@@ -51,18 +51,15 @@ resource "google_compute_instance" "vm_instances" {
     access_config {}
   }
 
-  metadata = {
-    startup-script = <<-EOF
-        #!/bin/bash
-        sudo apt-get update
-        sudo apt-get upgrade -y
-        sudo apt-get install -y apache2
-        sudo systemctl start apache2
-        sudo systemctl enable apache2
-        echo "<h1>Hello World</h1> from $(hostname) $(hostname -i)" | sudo tee /var/www/html/index.html
-        sudo systemctl restart apache2
+    metadata_startup_script = <<-EOF
+    #!/bin/bash
+    sudo apt-get update -y
+    sudo apt-get install apache2 -y
+    sudo systemctl enable apache2
+    sudo systemctl start apache2
+    echo "<h1>Hello from Talant Apache2 web server $(hostname) $(hostname -i)!</h1>" | sudo tee /var/www/html/index.html
+    sudo systemctl restart apache2
     EOF
-  }
 
   tags = ["allow-ssh-http"]
 }
