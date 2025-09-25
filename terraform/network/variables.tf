@@ -12,7 +12,7 @@ variable "project_id" {
 variable "configs" {
   type = list(object({
     subnet_name   = string
-    name          = string
+    vm_name       = string
     region        = string
     zone          = string
     cidr_range    = string
@@ -20,14 +20,14 @@ variable "configs" {
   default = [ 
     {
     subnet_name = "tlnt-subnet-us-east1"
-    name = "tlnt-vm-1"
+    vm_name = "tlnt-vm-1"
     region = "us-east1"
     zone = "us-east1-b"
     cidr_range = "172.0.0.0/24"
   },
     {
     subnet_name = "tlnt-subnet-us-central1"
-    name = "tlnt-vm-2"
+    vm_name = "tlnt-vm-2"
     region = "us-central1"
     zone = "us-central1-a"
     cidr_range = "172.1.0.0/24"
