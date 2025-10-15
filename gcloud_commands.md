@@ -37,9 +37,82 @@ gcloud compute instances list
 
  gcloud storate cp [FILE_NAME] gs://[BUCKET_NAME]
 
+ gcloud storage ls gs://[BUCKET_NAME]
+
  gsutil mb gs://[BUCKET_NAME]
 
  gsutil cp [FILE_NAME] gs://[BUCKET_NAME]
+
+ gsutil acl get gs://$BUCKET_NAME_1/setup.html
+
+ gsutil acl set private gs://$BUCKET_NAME_1/setup.html
+```
+## 5.1. Storage acls, encyptions
+```
+gsutil acl ch -u AllUsers:R gs://$BUCKET_NAME_1/setup.html
+gsutil acl get gs://$BUCKET_NAME_1/setup.html  > acl3.txt
+
+[
+  {
+    "email": "student-00-d617685e3d4b@qwiklabs.net",
+    "entity": "user-student-00-d617685e3d4b@qwiklabs.net",
+    "role": "OWNER"
+  },
+  {
+    "entity": "allUsers",
+    "role": "READER"
+  }
+]
+
+
+gsutil acl set private gs://$BUCKET_NAME_1/setup.html
+gsutil acl get gs://$BUCKET_NAME_1/setup.html  > acl2.txt
+cat acl2.txt
+
+//rewrite key for the object
+gsutil rewrite -k gs://$BUCKET_NAME_1/setup2.html
+
+```
+## 5.2 Enable storage bucket lifecycle management
+```
+//view lifecycle policy
+gsutil lifecycle get gs://$BUCKET_NAME_1
+
+gsutil lifecycle set life.json gs://$BUCKET_NAME_1
+
+```
+### 5.2.1 sample lifecycle policy, saved as life.json filename
+```
+{
+  "rule":
+  [
+    {
+      "action": {"type": "Delete"},
+      "condition": {"age": 31}
+    }
+  ]
+}
+```
+## 5.3 Enable versioning
+```
+//view current versioning
+gsutil versioning get gs://$BUCKET_NAME_1
+
+//enable versioning
+gsutil versioning set on gs://$BUCKET_NAME_1
+
+// edit file and copy to bucket with versioning
+gcloud storage cp -v setup.html gs://$BUCKET_NAME_1
+
+//list all available versions
+gcloud storage ls -a gs://$BUCKET_NAME_1/setup.html
+```
+
+## 5.4 Synchronizing local folder/subfolders and contents with storage bucket
+```
+gsutil rsync -r ./firstlevel gs://$BUCKET_NAME_1/firstleve
+
+gcloud storage ls -r gs://$BUCKET_NAME_1/firstlevel
 ```
 
 ## 6. Enable google apis

@@ -28,3 +28,7 @@ terraform.rc
 
 # Ignore plan output files
 *.tfplan
+
+# Ignore private and public key files
+**/*.pem
+**/*.pub

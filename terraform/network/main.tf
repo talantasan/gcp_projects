@@ -26,7 +26,11 @@ resource "google_compute_firewall" "allow_ssh_http" {
     ports    = ["80"]
   }
 
-  source_ranges = ["0.0.0.0/0"]
+  allow {
+    protocol = "icmp"
+  }
+
+  source_ranges = ["172.0.0.0/8"]
 
   target_tags = ["allow-ssh-http"]
 }
@@ -41,25 +45,78 @@ resource "google_compute_instance" "vm_instances" {
 
   boot_disk {
     initialize_params {
-      image = "debian-cloud/debian-11"
+      image = "debian-cloud/debian-12"
     }
   }
 
   network_interface {
     network = google_compute_network.custom_network.self_link
     subnetwork = google_compute_subnetwork.custom_subnet[each.value.subnet_name].self_link
+    # access_config {}
+  }
+
+    metadata = {
+      startup-script = <<-EOF
+      #!/bin/bash
+      sudo apt-get update -y
+      sudo apt-get install apache2 -y
+      sudo systemctl enable apache2
+      sudo systemctl start apache2
+      sudo echo "<h1>Hello from Talant Apache2 web server $(hostname) $(hostname -i)!</h1>" | sudo tee /var/www/html/index.html
+      sudo systemctl restart apache2
+      EOF
+    }
+
+  tags = ["allow-ssh-http"]
+}
+
+
+
+resource "google_compute_instance" "bastion_instance" {
+  name         = "${var.name}-bastion"
+  machine_type = "e2-micro"
+  zone         = var.bastion_configs.zone
+
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-12"
+    }
+  }
+
+  network_interface {
+    network    = google_compute_network.custom_network.self_link
+    subnetwork = google_compute_subnetwork.custom_subnet[var.bastion_configs.subnet].self_link
     access_config {}
   }
 
-    metadata_startup_script = <<-EOF
+  metadata = {
+    startup-script = <<-EOF
     #!/bin/bash
     sudo apt-get update -y
-    sudo apt-get install apache2 -y
-    sudo systemctl enable apache2
-    sudo systemctl start apache2
-    echo "<h1>Hello from Talant Apache2 web server $(hostname) $(hostname -i)!</h1>" | sudo tee /var/www/html/index.html
-    sudo systemctl restart apache2
+    sudo apt-get install -y htop
     EOF
+  }
 
-  tags = ["allow-ssh-http"]
+  tags = ["bastion"]
+}
+
+variable "bastion_configs" {
+  default = {
+    zone = "us-central1-a"
+    subnet = "tlnt-subnet-us-central1"
+  }
+}
+
+resource "google_compute_firewall" "allow_ssh_bastion" {
+  name    = "${var.name}-allow-ssh-bastion"
+  network = google_compute_network.custom_network.self_link
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+
+  target_tags = ["bastion"]
 }
